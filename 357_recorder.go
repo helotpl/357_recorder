@@ -44,6 +44,10 @@ func durationGraph(duration time.Duration) string {
 	m := duration.Truncate(time.Minute)
 	minutes := int(math.Round(m.Minutes()))
 	tenSeconds := int(math.Round((duration - m).Round(time.Second*10).Seconds() / 10))
+	if tenSeconds == 6 {
+		minutes += 1
+		tenSeconds = 0
+	}
 	return strings.Repeat("#", minutes) + strings.Repeat(":", tenSeconds/2) + strings.Repeat(".", tenSeconds%2)
 }
 
@@ -115,6 +119,13 @@ func main() {
 				}
 			}
 		case <-quit:
+			if previous == noTrack && !onlyTrackNames {
+				d := time.Now().Sub(prevt)
+				_, err = fmt.Fprintln(file, "", d.Round(time.Second), durationGraph(d))
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
 			os.Exit(0)
 		}
 	}
